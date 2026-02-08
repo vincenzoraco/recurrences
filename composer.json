@@ -1,0 +1,58 @@
+{
+    "name": "vincenzoraco/recurrences",
+    "description": "A Laravel package for managing recurring events using the RFC 5545 RRULE specification",
+    "keywords": ["laravel", "recurrence", "rrule", "recurring-events", "scheduler"],
+    "license": "MIT",
+    "homepage": "https://github.com/vincenzoraco/recurrences",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Vincenzo Raco",
+            "email": "vincenzo@vincenzoraco.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^v11.0|^v12.0",
+        "rlanvin/php-rrule": "^2.5"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^9.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "VincenzoRaco\\Recurrences\\": "src",
+            "VincenzoRaco\\Recurrences\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest --coverage-html coverage"
+
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "VincenzoRaco\\Recurrences\\RecurrencesServiceProvider"
+            ],
+            "aliases": {
+                "Recurrences": "VincenzoRaco\\Recurrences\\Recurrences"
+            }
+        }
+    }
+}
