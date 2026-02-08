@@ -10,6 +10,7 @@ class GetRSetOccurrencesBetweenDataObject extends DataObject
     public function __construct(
         private readonly Carbon $startDate,
         private readonly Carbon $endDate,
+        private readonly ?int $limit,
     ) {
         $this->validate();
     }
@@ -22,6 +23,11 @@ class GetRSetOccurrencesBetweenDataObject extends DataObject
     public function getEndDate(): Carbon
     {
         return $this->endDate;
+    }
+
+    public function getLimit(): ?int
+    {
+        return $this->limit;
     }
 
     /**

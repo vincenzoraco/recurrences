@@ -72,6 +72,7 @@ class RecurrencesService
         $occurrences = $rset->getOccurrencesBetween(
             $dataObject->getStartDate(),
             $dataObject->getEndDate(),
+            $dataObject->getLimit(),
         );
 
         return $this->getOccurrencesDataObject(
