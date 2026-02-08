@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 interface Recurrable
 {
-    public function getKey(): mixed;
+    public function getKey();
 
-    public function getMorphClass(): string;
+    public function getMorphClass();
 
     public function recurrenceConditions(): MorphMany;
 }
