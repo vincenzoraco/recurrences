@@ -67,6 +67,7 @@ describe('RecurrencesService', function () {
         $dataObject = new GetRSetOccurrencesBetweenDataObject(
             Carbon::parse('2024-01-01'),
             Carbon::parse('2024-01-10'),
+            null,
         );
 
         $result = $this->service->getRSetOccurrencesBetween($rset, $dataObject);

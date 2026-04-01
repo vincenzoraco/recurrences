@@ -8,7 +8,7 @@ describe('GetRSetOccurrencesBetweenDataObject', function () {
         $startDate = Carbon::parse('2024-01-01');
         $endDate = Carbon::parse('2024-01-31');
 
-        $dataObject = new GetRSetOccurrencesBetweenDataObject($startDate, $endDate);
+        $dataObject = new GetRSetOccurrencesBetweenDataObject($startDate, $endDate, null);
 
         expect($dataObject->getStartDate())->toBe($startDate);
     });
@@ -17,7 +17,7 @@ describe('GetRSetOccurrencesBetweenDataObject', function () {
         $startDate = Carbon::parse('2024-01-01');
         $endDate = Carbon::parse('2024-01-31');
 
-        $dataObject = new GetRSetOccurrencesBetweenDataObject($startDate, $endDate);
+        $dataObject = new GetRSetOccurrencesBetweenDataObject($startDate, $endDate, null);
 
         expect($dataObject->getEndDate())->toBe($endDate);
     });
@@ -26,13 +26,14 @@ describe('GetRSetOccurrencesBetweenDataObject', function () {
         expect(fn () => new GetRSetOccurrencesBetweenDataObject(
             Carbon::parse('2024-01-31'),
             Carbon::parse('2024-01-01'),
+            null,
         ))->toThrow(InvalidArgumentException::class, 'Start date must be before end date');
     });
 
     it('does not throw for same dates', function () {
         $date = Carbon::parse('2024-01-15');
 
-        $dataObject = new GetRSetOccurrencesBetweenDataObject($date, $date);
+        $dataObject = new GetRSetOccurrencesBetweenDataObject($date, $date, null);
 
         expect($dataObject->getStartDate())->toBe($date);
         expect($dataObject->getEndDate())->toBe($date);
