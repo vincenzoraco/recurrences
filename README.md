@@ -105,8 +105,8 @@ app(\VincenzoRaco\Recurrences\RecurrencesService::class)
 
 // Exclude a range of dates
 $excludeRange = new ExcludeOccurrencesRangeDataObject(
-    start: Carbon::parse('2024-12-24'),
-    end: Carbon::parse('2024-12-26'),
+    startDate: Carbon::parse('2024-12-24'),
+    endDate: Carbon::parse('2024-12-26'),
 );
 
 app(\VincenzoRaco\Recurrences\RecurrencesService::class)
@@ -145,7 +145,7 @@ foreach ($occurrences->getOccurrences() as $occurrence) {
 ### Using the facade
 
 ```php
-use VincenzoRaco\Recurrences\Facades\Recurrences;
+use VincenzoRaco\Recurrences\Recurrences;
 use Illuminate\Support\Carbon;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
 
