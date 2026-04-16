@@ -28,7 +28,7 @@ class RecurrencesService
             sprintf(
                 '%s%s',
                 $recurrable->getKey(),
-                $occurrence->toDateString(),
+                $occurrence->toDateTimeString(),
             ),
         );
     }
@@ -106,6 +106,15 @@ class RecurrencesService
         );
     }
 
+    public function getOccurrencesBetween(
+        Recurrable $recurrable,
+        GetRSetOccurrencesBetweenDataObject $dataObject,
+    ): OccurrencesDataObject {
+        $rset = $this->getRSet($recurrable->recurrenceConditions()->get());
+
+        return $this->getRSetOccurrencesBetween($rset, $dataObject);
+    }
+
     public function createOneTimeOccurrenceCondition(
         Recurrable $recurrable,
         SingleOccurrenceConditionDataObject $dataObject,
@@ -144,6 +153,12 @@ class RecurrencesService
             'condition_type' => RecurringConditionType::ADD_EX_DATE,
             'condition_value' => $dataObject->getConditionValue(),
         ]);
+    }
+
+    public function deleteAllConditions(
+        Recurrable $recurrable,
+    ): int {
+        return $recurrable->recurrenceConditions()->delete();
     }
 
     protected function getMaximumOccurrences(): int
