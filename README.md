@@ -198,7 +198,7 @@ $deleted = app(\VincenzoRaco\Recurrences\RecurrencesService::class)
 ### Using the facade
 
 ```php
-use VincenzoRaco\Recurrences\Facades\Recurrences;
+use VincenzoRaco\Recurrences\Recurrences;
 use Illuminate\Support\Carbon;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
 
