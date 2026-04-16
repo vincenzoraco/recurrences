@@ -62,6 +62,30 @@ $condition = new MultipleOccurrencesConditionDataObject(
     endingCondition: new EndingConditionUntilDataObject(
         until: Carbon::parse('2024-03-31'),
     ),
+    byWeekDay: null,
+);
+
+app(\VincenzoRaco\Recurrences\RecurrencesService::class)
+    ->createMultipleOccurrencesCondition($event, $condition);
+```
+
+### Filtering by weekday
+
+Restrict a recurring event to specific days of the week using the `RecurringWeekDay` enum:
+
+```php
+use Illuminate\Support\Carbon;
+use VincenzoRaco\Recurrences\Enums\RecurringFrequency;
+use VincenzoRaco\Recurrences\Enums\RecurringWeekDay;
+use VincenzoRaco\Recurrences\DataObjects\MultipleOccurrencesConditionDataObject;
+use VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject;
+
+$condition = new MultipleOccurrencesConditionDataObject(
+    start: Carbon::parse('2024-01-01'),
+    frequency: RecurringFrequency::WEEKLY,
+    interval: 1,
+    endingCondition: new NoEndingConditionDataObject,
+    byWeekDay: [RecurringWeekDay::MONDAY, RecurringWeekDay::WEDNESDAY, RecurringWeekDay::FRIDAY],
 );
 
 app(\VincenzoRaco\Recurrences\RecurrencesService::class)
@@ -105,8 +129,9 @@ app(\VincenzoRaco\Recurrences\RecurrencesService::class)
 
 // Exclude a range of dates
 $excludeRange = new ExcludeOccurrencesRangeDataObject(
-    start: Carbon::parse('2024-12-24'),
-    end: Carbon::parse('2024-12-26'),
+    startDate: Carbon::parse('2024-12-24'),
+    endDate: Carbon::parse('2024-12-26'),
+    frequency: RecurringFrequency::DAILY,
 );
 
 app(\VincenzoRaco\Recurrences\RecurrencesService::class)
@@ -142,10 +167,38 @@ foreach ($occurrences->getOccurrences() as $occurrence) {
 }
 ```
 
+### Getting occurrences directly from a model
+
+A shorthand to build the RSet and query occurrences in one call:
+
+```php
+use Illuminate\Support\Carbon;
+use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
+
+$event = Event::find(1);
+
+$dataObject = new GetRSetOccurrencesBetweenDataObject(
+    startDate: Carbon::parse('2024-01-01'),
+    endDate: Carbon::parse('2024-01-31'),
+);
+
+$occurrences = app(\VincenzoRaco\Recurrences\RecurrencesService::class)
+    ->getOccurrencesBetween($event, $dataObject);
+```
+
+### Deleting all conditions
+
+Remove every recurrence condition attached to a model:
+
+```php
+$deleted = app(\VincenzoRaco\Recurrences\RecurrencesService::class)
+    ->deleteAllConditions($event);
+```
+
 ### Using the facade
 
 ```php
-use VincenzoRaco\Recurrences\Facades\Recurrences;
+use VincenzoRaco\Recurrences\Recurrences;
 use Illuminate\Support\Carbon;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
 
@@ -191,6 +244,16 @@ return [
 - `RecurringFrequency::WEEKLY`
 - `RecurringFrequency::MONTHLY`
 - `RecurringFrequency::YEARLY`
+
+## Available Week Days
+
+- `RecurringWeekDay::MONDAY`
+- `RecurringWeekDay::TUESDAY`
+- `RecurringWeekDay::WEDNESDAY`
+- `RecurringWeekDay::THURSDAY`
+- `RecurringWeekDay::FRIDAY`
+- `RecurringWeekDay::SATURDAY`
+- `RecurringWeekDay::SUNDAY`
 
 ## Ending Conditions
 

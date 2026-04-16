@@ -36,7 +36,7 @@ describe('RecurrencesService', function () {
 
         $hash = $this->service->getOccurrenceHash($mockRecurrable, $occurrence);
 
-        expect($hash)->toBe(md5('model_123'.'2024-06-15'));
+        expect($hash)->toBe(md5('model_123'.$occurrence->toDateTimeString()));
     });
 
     it('generates collection of occurrence hashes', function () {
@@ -52,7 +52,7 @@ describe('RecurrencesService', function () {
 
         expect($hashes)->toBeInstanceOf(Collection::class);
         expect($hashes->count())->toBe(2);
-        expect($hashes->first())->toBe(md5('model_123'.'2024-06-15'));
+        expect($hashes->first())->toBe(md5('model_123'.$occurrences->first()->toDateTimeString()));
     });
 
     it('creates RSet from recurrence conditions', function () {
@@ -114,6 +114,7 @@ describe('RecurrencesService', function () {
             RecurringFrequency::WEEKLY,
             1,
             new NoEndingConditionDataObject,
+            null,
         );
 
         $result = $this->service->createMultipleOccurrencesCondition($mockRecurrable, $dataObject);
@@ -141,6 +142,7 @@ describe('RecurrencesService', function () {
         $dataObject = new ExcludeOccurrencesRangeDataObject(
             Carbon::parse('2024-06-01'),
             Carbon::parse('2024-06-30'),
+            RecurringFrequency::DAILY,
         );
 
         $result = $this->service->createExcludeOccurrencesRangeCondition($mockRecurrable, $dataObject);
@@ -168,5 +170,39 @@ describe('RecurrencesService', function () {
 
         expect($result)->toBeInstanceOf(OccurrencesDataObject::class);
         expect($result->getOccurrences()->count())->toBe(3);
+    });
+
+    it('gets occurrences between dates directly from recurrable', function () {
+        $mockCondition = mock(RecurringCondition::class);
+        $mockCondition->shouldReceive('getRsetMethod')->andReturn('addRRule');
+        $mockCondition->shouldReceive('getRsetValue')->andReturn('FREQ=DAILY;COUNT=10');
+
+        $mockMorphMany = mock(MorphMany::class);
+        $mockMorphMany->shouldReceive('get')->andReturn(collect([$mockCondition]));
+
+        $mockRecurrable = mock(Recurrable::class);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn($mockMorphMany);
+
+        $dataObject = new GetRSetOccurrencesBetweenDataObject(
+            Carbon::parse('2024-01-01'),
+            Carbon::parse('2024-01-10'),
+            null,
+        );
+
+        $result = $this->service->getOccurrencesBetween($mockRecurrable, $dataObject);
+
+        expect($result)->toBeInstanceOf(OccurrencesDataObject::class);
+    });
+
+    it('deletes all conditions for a recurrable', function () {
+        $mockMorphMany = mock(MorphMany::class);
+        $mockMorphMany->shouldReceive('delete')->once()->andReturn(3);
+
+        $mockRecurrable = mock(Recurrable::class);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn($mockMorphMany);
+
+        $count = $this->service->deleteAllConditions($mockRecurrable);
+
+        expect($count)->toBe(3);
     });
 });
