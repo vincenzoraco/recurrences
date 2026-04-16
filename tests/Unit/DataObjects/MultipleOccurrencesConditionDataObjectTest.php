@@ -1,7 +1,10 @@
 <?php
 
 use Illuminate\Support\Carbon;
+use VincenzoRaco\Recurrences\DataObjects\EndingConditionTimesDataObject;
+use VincenzoRaco\Recurrences\DataObjects\EndingConditionUntilDataObject;
 use VincenzoRaco\Recurrences\DataObjects\MultipleOccurrencesConditionDataObject;
+use VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject;
 use VincenzoRaco\Recurrences\Enums\RecurringFrequency;
 
 describe('MultipleOccurrencesConditionDataObject', function () {
@@ -11,7 +14,7 @@ describe('MultipleOccurrencesConditionDataObject', function () {
             $start,
             RecurringFrequency::WEEKLY,
             1,
-            new \VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject,
+            new NoEndingConditionDataObject,
         );
 
         expect($dataObject->getStart())->toBe($start);
@@ -22,7 +25,7 @@ describe('MultipleOccurrencesConditionDataObject', function () {
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
             1,
-            new \VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject,
+            new NoEndingConditionDataObject,
         );
 
         expect($dataObject->getFrequency())->toBe(RecurringFrequency::WEEKLY);
@@ -33,14 +36,14 @@ describe('MultipleOccurrencesConditionDataObject', function () {
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
             2,
-            new \VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject,
+            new NoEndingConditionDataObject,
         );
 
         expect($dataObject->getInterval())->toBe(2);
     });
 
     it('returns correct ending condition', function () {
-        $endingCondition = new \VincenzoRaco\Recurrences\DataObjects\EndingConditionTimesDataObject(10);
+        $endingCondition = new EndingConditionTimesDataObject(10);
         $dataObject = new MultipleOccurrencesConditionDataObject(
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
@@ -56,7 +59,7 @@ describe('MultipleOccurrencesConditionDataObject', function () {
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
             0,
-            new \VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject,
+            new NoEndingConditionDataObject,
         ))->toThrow(InvalidArgumentException::class, 'Interval must be at least 1');
     });
 
@@ -65,7 +68,7 @@ describe('MultipleOccurrencesConditionDataObject', function () {
             Carbon::parse('2024-06-01'),
             RecurringFrequency::WEEKLY,
             1,
-            new \VincenzoRaco\Recurrences\DataObjects\EndingConditionUntilDataObject(Carbon::parse('2024-01-01')),
+            new EndingConditionUntilDataObject(Carbon::parse('2024-01-01')),
         ))->toThrow(InvalidArgumentException::class, 'Start must be before until');
     });
 
@@ -74,7 +77,7 @@ describe('MultipleOccurrencesConditionDataObject', function () {
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
             1,
-            new \VincenzoRaco\Recurrences\DataObjects\EndingConditionUntilDataObject(Carbon::parse('2024-12-31')),
+            new EndingConditionUntilDataObject(Carbon::parse('2024-12-31')),
         );
 
         expect($dataObject->getStart())->not->toBeNull();

@@ -1,3 +1,7 @@
 <?php
 
-uses(\Tests\Unit\TestCase::class)->in(__DIR__);
+declare(strict_types=1);
+
+use Tests\Unit\TestCase;
+
+uses(TestCase::class)->in(__DIR__);
