@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use RRule\RSet;
@@ -7,9 +8,11 @@ use VincenzoRaco\Recurrences\Contracts\Recurrable;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesLimitedDataObject;
 use VincenzoRaco\Recurrences\DataObjects\MultipleOccurrencesConditionDataObject;
+use VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject;
 use VincenzoRaco\Recurrences\DataObjects\OccurrencesDataObject;
 use VincenzoRaco\Recurrences\DataObjects\SingleOccurrenceConditionDataObject;
 use VincenzoRaco\Recurrences\Enums\RecurringFrequency;
+use VincenzoRaco\Recurrences\Models\RecurringCondition;
 use VincenzoRaco\Recurrences\RecurrencesService;
 
 describe('RecurrencesService', function () {
@@ -31,7 +34,7 @@ describe('RecurrencesService', function () {
 
         $hash = $this->service->getOccurrenceHash($mockRecurrable, $occurrence);
 
-        expect($hash)->toBe(md5('model_123'.'2024-06-15'));
+        expect($hash)->toBe(md5('model_123'.$occurrence->toDateTimeString()));
     });
 
     it('generates collection of occurrence hashes', function () {
@@ -47,11 +50,11 @@ describe('RecurrencesService', function () {
 
         expect($hashes)->toBeInstanceOf(Collection::class);
         expect($hashes->count())->toBe(2);
-        expect($hashes->first())->toBe(md5('model_123'.'2024-06-15'));
+        expect($hashes->first())->toBe(md5('model_123'.$occurrences->first()->toDateTimeString()));
     });
 
     it('creates RSet from recurrence conditions', function () {
-        $mockCondition = mock(\VincenzoRaco\Recurrences\Models\RecurringCondition::class);
+        $mockCondition = mock(RecurringCondition::class);
         $mockCondition->shouldReceive('getRsetMethod')->andReturn('addRRule');
         $mockCondition->shouldReceive('getRsetValue')->andReturn('FREQ=DAILY');
 
@@ -89,30 +92,65 @@ describe('RecurrencesService', function () {
 
     it('creates one-time occurrence condition', function () {
         $mockRecurrable = mock(Recurrable::class);
-        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn(mock(\Illuminate\Database\Eloquent\Relations\MorphMany::class));
-        $mockRecurrable->recurrenceConditions()->shouldReceive('create')->andReturn(new \VincenzoRaco\Recurrences\Models\RecurringCondition);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn(mock(MorphMany::class));
+        $mockRecurrable->recurrenceConditions()->shouldReceive('create')->andReturn(new RecurringCondition);
 
         $dataObject = new SingleOccurrenceConditionDataObject(Carbon::parse('2024-06-15'));
 
         $result = $this->service->createOneTimeOccurrenceCondition($mockRecurrable, $dataObject);
 
-        expect($result)->toBeInstanceOf(\VincenzoRaco\Recurrences\Models\RecurringCondition::class);
+        expect($result)->toBeInstanceOf(RecurringCondition::class);
     });
 
     it('creates multiple occurrences condition', function () {
         $mockRecurrable = mock(Recurrable::class);
-        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn(mock(\Illuminate\Database\Eloquent\Relations\MorphMany::class));
-        $mockRecurrable->recurrenceConditions()->shouldReceive('create')->andReturn(new \VincenzoRaco\Recurrences\Models\RecurringCondition);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn(mock(MorphMany::class));
+        $mockRecurrable->recurrenceConditions()->shouldReceive('create')->andReturn(new RecurringCondition);
 
         $dataObject = new MultipleOccurrencesConditionDataObject(
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
             1,
-            new \VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject,
+            new NoEndingConditionDataObject,
+            null,
         );
 
         $result = $this->service->createMultipleOccurrencesCondition($mockRecurrable, $dataObject);
 
-        expect($result)->toBeInstanceOf(\VincenzoRaco\Recurrences\Models\RecurringCondition::class);
+        expect($result)->toBeInstanceOf(RecurringCondition::class);
+    });
+
+    it('gets occurrences between dates directly from recurrable', function () {
+        $mockCondition = mock(RecurringCondition::class);
+        $mockCondition->shouldReceive('getRsetMethod')->andReturn('addRRule');
+        $mockCondition->shouldReceive('getRsetValue')->andReturn('FREQ=DAILY;COUNT=10');
+
+        $mockMorphMany = mock(MorphMany::class);
+        $mockMorphMany->shouldReceive('get')->andReturn(collect([$mockCondition]));
+
+        $mockRecurrable = mock(Recurrable::class);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn($mockMorphMany);
+
+        $dataObject = new GetRSetOccurrencesBetweenDataObject(
+            Carbon::parse('2024-01-01'),
+            Carbon::parse('2024-01-10'),
+            null,
+        );
+
+        $result = $this->service->getOccurrencesBetween($mockRecurrable, $dataObject);
+
+        expect($result)->toBeInstanceOf(OccurrencesDataObject::class);
+    });
+
+    it('deletes all conditions for a recurrable', function () {
+        $mockMorphMany = mock(MorphMany::class);
+        $mockMorphMany->shouldReceive('delete')->once()->andReturn(3);
+
+        $mockRecurrable = mock(Recurrable::class);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn($mockMorphMany);
+
+        $count = $this->service->deleteAllConditions($mockRecurrable);
+
+        expect($count)->toBe(3);
     });
 });
