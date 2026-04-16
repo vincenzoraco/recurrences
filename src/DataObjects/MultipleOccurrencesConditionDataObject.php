@@ -6,14 +6,19 @@ use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use RRule\RRule;
 use VincenzoRaco\Recurrences\Enums\RecurringFrequency;
+use VincenzoRaco\Recurrences\Enums\RecurringWeekDay;
 
 class MultipleOccurrencesConditionDataObject extends DataObject
 {
+    /**
+     * @param  array<RecurringWeekDay>|null  $byWeekDay
+     */
     public function __construct(
         private readonly Carbon $start,
         private readonly RecurringFrequency $frequency,
         private readonly int $interval,
         private readonly NoEndingConditionDataObject|EndingConditionUntilDataObject|EndingConditionTimesDataObject $endingCondition,
+        private readonly ?array $byWeekDay,
     ) {
         $this->validate();
     }
@@ -38,6 +43,14 @@ class MultipleOccurrencesConditionDataObject extends DataObject
         return $this->endingCondition;
     }
 
+    /**
+     * @return array<RecurringWeekDay>|null
+     */
+    public function getByWeekDay(): ?array
+    {
+        return $this->byWeekDay;
+    }
+
     public function getConditionValue(): RRule
     {
         return new RRule(array_filter([
@@ -47,6 +60,7 @@ class MultipleOccurrencesConditionDataObject extends DataObject
             // If UNTIL and COUNT are NULL the RRULE never ends
             'UNTIL' => $this->getEndingCondition()->getUntil()?->format('Y-m-d'),
             'COUNT' => $this->getEndingCondition()->getTimes(),
+            'BYDAY' => $this->getByWeekDay() ? array_map(fn (RecurringWeekDay $day) => $day->value, $this->getByWeekDay()) : null,
         ]));
     }
 

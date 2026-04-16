@@ -2,13 +2,14 @@
 
 use Illuminate\Support\Carbon;
 use VincenzoRaco\Recurrences\DataObjects\ExcludeOccurrencesRangeDataObject;
+use VincenzoRaco\Recurrences\Enums\RecurringFrequency;
 
 describe('ExcludeOccurrencesRangeDataObject', function () {
     it('returns correct start date', function () {
         $startDate = Carbon::parse('2024-01-01');
         $endDate = Carbon::parse('2024-01-31');
 
-        $dataObject = new ExcludeOccurrencesRangeDataObject($startDate, $endDate);
+        $dataObject = new ExcludeOccurrencesRangeDataObject($startDate, $endDate, RecurringFrequency::DAILY);
 
         expect($dataObject->getStartDate())->toBe($startDate);
     });
@@ -17,7 +18,7 @@ describe('ExcludeOccurrencesRangeDataObject', function () {
         $startDate = Carbon::parse('2024-01-01');
         $endDate = Carbon::parse('2024-01-31');
 
-        $dataObject = new ExcludeOccurrencesRangeDataObject($startDate, $endDate);
+        $dataObject = new ExcludeOccurrencesRangeDataObject($startDate, $endDate, RecurringFrequency::DAILY);
 
         expect($dataObject->getEndDate())->toBe($endDate);
     });
@@ -26,6 +27,7 @@ describe('ExcludeOccurrencesRangeDataObject', function () {
         expect(fn () => new ExcludeOccurrencesRangeDataObject(
             Carbon::parse('2024-01-31'),
             Carbon::parse('2024-01-01'),
+            RecurringFrequency::DAILY,
         ))->toThrow(InvalidArgumentException::class, 'Start date must be before end date');
     });
 
@@ -33,6 +35,7 @@ describe('ExcludeOccurrencesRangeDataObject', function () {
         $dataObject = new ExcludeOccurrencesRangeDataObject(
             Carbon::parse('2024-01-01'),
             Carbon::parse('2024-01-31'),
+            RecurringFrequency::DAILY,
         );
 
         expect($dataObject->getStartDate())->not->toBeNull();
@@ -43,10 +46,33 @@ describe('ExcludeOccurrencesRangeDataObject', function () {
         $dataObject = new ExcludeOccurrencesRangeDataObject(
             Carbon::parse('2024-01-01'),
             Carbon::parse('2024-01-31'),
+            RecurringFrequency::DAILY,
         );
 
         $rrule = $dataObject->getConditionValue();
 
         expect($rrule)->not->toBeNull();
+    });
+
+    it('returns correct frequency', function () {
+        $dataObject = new ExcludeOccurrencesRangeDataObject(
+            Carbon::parse('2024-01-01'),
+            Carbon::parse('2024-01-31'),
+            RecurringFrequency::DAILY,
+        );
+
+        expect($dataObject->getFrequency())->toBe(RecurringFrequency::DAILY);
+        expect((string) $dataObject->getConditionValue())->toContain('FREQ=DAILY');
+    });
+
+    it('uses provided frequency in condition value', function () {
+        $dataObject = new ExcludeOccurrencesRangeDataObject(
+            Carbon::parse('2024-01-01'),
+            Carbon::parse('2024-12-31'),
+            RecurringFrequency::WEEKLY,
+        );
+
+        expect($dataObject->getFrequency())->toBe(RecurringFrequency::WEEKLY);
+        expect((string) $dataObject->getConditionValue())->toContain('FREQ=WEEKLY');
     });
 });

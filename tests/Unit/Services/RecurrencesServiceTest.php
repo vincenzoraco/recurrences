@@ -7,6 +7,7 @@ use VincenzoRaco\Recurrences\Contracts\Recurrable;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesLimitedDataObject;
 use VincenzoRaco\Recurrences\DataObjects\MultipleOccurrencesConditionDataObject;
+use VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject;
 use VincenzoRaco\Recurrences\DataObjects\OccurrencesDataObject;
 use VincenzoRaco\Recurrences\DataObjects\SingleOccurrenceConditionDataObject;
 use VincenzoRaco\Recurrences\Enums\RecurringFrequency;
@@ -108,7 +109,8 @@ describe('RecurrencesService', function () {
             Carbon::parse('2024-01-01'),
             RecurringFrequency::WEEKLY,
             1,
-            new \VincenzoRaco\Recurrences\DataObjects\NoEndingConditionDataObject,
+            new NoEndingConditionDataObject,
+            null,
         );
 
         $result = $this->service->createMultipleOccurrencesCondition($mockRecurrable, $dataObject);

@@ -12,6 +12,7 @@ class ExcludeOccurrencesRangeDataObject extends DataObject
     public function __construct(
         private readonly Carbon $startDate,
         private readonly Carbon $endDate,
+        private readonly RecurringFrequency $frequency,
     ) {
         $this->validate();
     }
@@ -26,11 +27,16 @@ class ExcludeOccurrencesRangeDataObject extends DataObject
         return $this->endDate;
     }
 
+    public function getFrequency(): RecurringFrequency
+    {
+        return $this->frequency;
+    }
+
     public function getConditionValue(): RRule
     {
         return new RRule([
             'DTSTART' => $this->getStartDate()->toDateString(),
-            'FREQ' => RecurringFrequency::DAILY->value,
+            'FREQ' => $this->getFrequency()->value,
             'INTERVAL' => 1,
             'UNTIL' => $this->getEndDate()->toDateString(),
         ]);
