@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use VincenzoRaco\Recurrences\Enums\RecurringConditionType;
@@ -70,24 +71,24 @@ describe('RecurringCondition', function () {
     it('addRrule scope filters by ADD_RRULE condition type', function () {
         $query = RecurringCondition::addRrule();
 
-        expect($query)->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+        expect($query)->toBeInstanceOf(Builder::class);
     });
 
     it('addExRrule scope filters by ADD_EX_RRULE condition type', function () {
         $query = RecurringCondition::addExRrule();
 
-        expect($query)->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+        expect($query)->toBeInstanceOf(Builder::class);
     });
 
     it('addDate scope filters by ADD_DATE condition type', function () {
         $query = RecurringCondition::addDate();
 
-        expect($query)->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+        expect($query)->toBeInstanceOf(Builder::class);
     });
 
     it('addExDate scope filters by ADD_EX_DATE condition type', function () {
         $query = RecurringCondition::addExDate();
 
-        expect($query)->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+        expect($query)->toBeInstanceOf(Builder::class);
     });
 });

@@ -5,7 +5,7 @@ namespace VincenzoRaco\Recurrences;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \VincenzoRaco\Recurrences\RecurrencesService
+ * @see RecurrencesService
  */
 class Recurrences extends Facade
 {

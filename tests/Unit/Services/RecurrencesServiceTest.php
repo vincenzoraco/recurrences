@@ -5,6 +5,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use RRule\RSet;
 use VincenzoRaco\Recurrences\Contracts\Recurrable;
+use VincenzoRaco\Recurrences\DataObjects\ExcludeOccurrencesRangeDataObject;
+use VincenzoRaco\Recurrences\DataObjects\ExcludeOneTimeOccurrenceDataObject;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesBetweenDataObject;
 use VincenzoRaco\Recurrences\DataObjects\GetRSetOccurrencesLimitedDataObject;
 use VincenzoRaco\Recurrences\DataObjects\MultipleOccurrencesConditionDataObject;
@@ -118,6 +120,56 @@ describe('RecurrencesService', function () {
         $result = $this->service->createMultipleOccurrencesCondition($mockRecurrable, $dataObject);
 
         expect($result)->toBeInstanceOf(RecurringCondition::class);
+    });
+
+    it('creates exclude one-time occurrence condition', function () {
+        $mockRecurrable = mock(Recurrable::class);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn(mock(MorphMany::class));
+        $mockRecurrable->recurrenceConditions()->shouldReceive('create')->andReturn(new RecurringCondition);
+
+        $dataObject = new ExcludeOneTimeOccurrenceDataObject(Carbon::parse('2024-06-15'));
+
+        $result = $this->service->createExcludeOneTimeOccurrenceCondition($mockRecurrable, $dataObject);
+
+        expect($result)->toBeInstanceOf(RecurringCondition::class);
+    });
+
+    it('creates exclude occurrences range condition', function () {
+        $mockRecurrable = mock(Recurrable::class);
+        $mockRecurrable->shouldReceive('recurrenceConditions')->andReturn(mock(MorphMany::class));
+        $mockRecurrable->recurrenceConditions()->shouldReceive('create')->andReturn(new RecurringCondition);
+
+        $dataObject = new ExcludeOccurrencesRangeDataObject(
+            Carbon::parse('2024-06-01'),
+            Carbon::parse('2024-06-30'),
+            RecurringFrequency::DAILY,
+        );
+
+        $result = $this->service->createExcludeOccurrencesRangeCondition($mockRecurrable, $dataObject);
+
+        expect($result)->toBeInstanceOf(RecurringCondition::class);
+    });
+
+    it('returns occurrences with safety limit', function () {
+        $rset = new RSet;
+        $rset->addRRule('FREQ=DAILY;COUNT=20');
+
+        $result = $this->service->getOccurrencesWithSafety($rset, 5);
+
+        expect($result)->toBeInstanceOf(OccurrencesDataObject::class);
+        expect($result->getOccurrences()->count())->toBe(5);
+    });
+
+    it('returns occurrences with default safety limit from config', function () {
+        config(['recurrences.max_occurrences' => 3]);
+
+        $rset = new RSet;
+        $rset->addRRule('FREQ=DAILY;COUNT=20');
+
+        $result = $this->service->getOccurrencesWithSafety($rset);
+
+        expect($result)->toBeInstanceOf(OccurrencesDataObject::class);
+        expect($result->getOccurrences()->count())->toBe(3);
     });
 
     it('gets occurrences between dates directly from recurrable', function () {
